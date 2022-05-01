@@ -1,0 +1,2 @@
+def accountView():
+    raise NotImplemented

@@ -1,0 +1,2 @@
+def storeView():
+    raise NotImplemented

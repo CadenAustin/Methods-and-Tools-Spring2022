@@ -1,0 +1,2 @@
+def menuView():
+    raise NotImplemented
