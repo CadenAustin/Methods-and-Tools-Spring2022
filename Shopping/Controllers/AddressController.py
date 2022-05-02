@@ -2,6 +2,7 @@ from Models import Address, PaymentInfo
 from Helpers import getSession
 
 def newAddress(street_one, street_two, city, state, zip) -> Address:
+    
     session = getSession()
     addressInstance = Address(street_one=street_one, street_two=street_two, city=city, state=state, zip=zip)
 
