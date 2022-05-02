@@ -11,7 +11,6 @@ def newOrderFromCart(cart: ShoppingCart, shippingAddress: Address, payment: Paym
 
     session.add(orderInstance)
     session.commit()
-
     session.refresh(orderInstance)
 
     for item in session.query(ShoppingCart).filter_by(cart_id=cart.cart_id).first().items:
