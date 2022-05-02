@@ -31,9 +31,8 @@ def createMovie(movieInfo):
     movieInstance = Movie(director=movieInfo["director"], leading_actor=movieInfo["leading_actor"])    
     session.add(movieInstance)
     session.commit()
-
     session.refresh(movieInstance)
-
+    
     itemInstance = InventoryItem(quantity=movieInfo["quantity"], title=movieInfo["title"], description=movieInfo["description"], genre=movieInfo["genre"], price=movieInfo["price"], item_type="M", movie_reference=movieInstance.id)
     session.add(itemInstance)
     session.commit()
