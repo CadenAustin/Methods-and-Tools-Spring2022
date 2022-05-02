@@ -14,7 +14,6 @@ class Order(Base):
     items = relationship("OrderItem", cascade="all, delete", passive_deletes=True)
 
 
-
 class OrderItem(Base):
     __tablename__ = "OrderItem"
     id = Column(Integer, primary_key=True)
