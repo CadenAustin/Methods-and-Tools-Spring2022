@@ -1,1 +1,1 @@
-from .sql_helper import getSession
+from .sql_helper import getSession, flattenEntries

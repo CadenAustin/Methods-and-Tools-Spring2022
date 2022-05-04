@@ -1,4 +1,4 @@
-from Models import Customer, CartItem, ShoppingCart
+from Models import Customer, CartItem, ShoppingCart, Movie, Book
 from Helpers import getSession
 from Models.Item import InventoryItem
 
@@ -8,12 +8,15 @@ def getUserCart(user: Customer) -> ShoppingCart:
 
 def getItemsInCart(cart: ShoppingCart):
     session = getSession()
-    return session.query(CartItem).filter_by(cart_id=cart.cart_id).all()
+    ret = {"books": [], "movies": []}
+    ret["books"] = session.query(CartItem, InventoryItem, Book).filter_by(cart_id=cart.cart_id).join(InventoryItem, CartItem.item_id == InventoryItem.item_id).join(Book, InventoryItem.book_reference == Book.id).all()
+    ret["movies"] = session.query(CartItem, InventoryItem, Movie).filter_by(cart_id=cart.cart_id).join(InventoryItem, CartItem.item_id == InventoryItem.item_id).join(Movie, InventoryItem.movie_reference == Movie.id).all()
+    return ret
 
 def updateCartItem(cart: ShoppingCart, item: InventoryItem, quantity: int):
-    if ("InventoryItem" in dir(item)):
+    try:
         invItem = item.InventoryItem
-    else:
+    except:
         invItem = item
     session = getSession()
     cartQuery = session.query(ShoppingCart).filter_by(cart_id=cart.cart_id)
@@ -23,20 +26,20 @@ def updateCartItem(cart: ShoppingCart, item: InventoryItem, quantity: int):
     priceDiff = 0
     quantityDiff = 0
     if cartItem.first():
-        quantityDiff = (quantity - cartItem.first().quantity)
+        quantityDiff = (quantity - cartItem.first().item_quantity)
         priceDiff = quantityDiff * invItem.price 
         if quantity == 0:
             cartItem.delete()
         else:
-            cartItem.update({CartItem.quantity: quantity, CartItem.subtotal: cartItem.first().subtotal - priceDiff})
+            cartItem.update({CartItem.item_quantity: quantity, CartItem.subtotal: f"{float(cartItem.first().subtotal) + priceDiff:.2f}"})
     else:
         if quantity != 0:
             quantityDiff = quantity
             priceDiff = (quantity * invItem.price)
-            cItem = CartItem(quantity=quantity, cart_id=cart.cart_id, subtotal=priceDiff, item_id=invItem.item_id)
+            cItem = CartItem(item_quantity=quantity, cart_id=cart.cart_id, subtotal=f"{priceDiff:.2f}", item_id=invItem.item_id)
             session.add(cItem)
-    cartQuery.update({"total": cartQuery.first().total + priceDiff})
-    itemQuery.update({"quantity": itemQuery.first().quantity - quantityDiff})
+    cartQuery.update({"total": f"{cartQuery.first().total + priceDiff:.2f}"})
+    itemQuery.update({"inv_quantity": itemQuery.first().inv_quantity - quantityDiff})
     session.commit()
 
 #Only call when user is deleted
@@ -64,4 +67,9 @@ def resetUserCart(user: Customer) -> bool:
 def getCurrentCartQuantity(cart: ShoppingCart, item: InventoryItem) -> int:
     session = getSession()
     cartItem = session.query(CartItem).filter_by(cart_id=cart.cart_id).filter_by(item_id=item.item_id).first()
-    return cartItem.quantity if cartItem else 0
+    return cartItem.item_quantity if cartItem else 0
+
+def getCartItem(cart_item_id) -> InventoryItem:
+    session = getSession()
+    cart_item =  session.query(CartItem).filter_by(cart_item_id=cart_item_id).first()
+    return session.query(InventoryItem).filter_by(item_id=cart_item.item_id).first()

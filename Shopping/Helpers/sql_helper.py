@@ -22,7 +22,7 @@ def createBook(bookInfo):
     session.commit()
 
     book = session.query(Book).filter_by(isbn=bookInfo["isbn"]).first()
-    itemInstance = InventoryItem(quantity=bookInfo["quantity"], title=bookInfo["title"], description=bookInfo["description"], genre=bookInfo["genre"], price=bookInfo["price"], item_type="B", book_reference=book.id)
+    itemInstance = InventoryItem(inv_quantity=bookInfo["quantity"], title=bookInfo["title"], description=bookInfo["description"], genre=bookInfo["genre"], price=bookInfo["price"], item_type="B", book_reference=book.id)
     session.add(itemInstance)
     session.commit()
 
@@ -31,9 +31,10 @@ def createMovie(movieInfo):
     movieInstance = Movie(director=movieInfo["director"], leading_actor=movieInfo["leading_actor"])    
     session.add(movieInstance)
     session.commit()
+
     session.refresh(movieInstance)
-    
-    itemInstance = InventoryItem(quantity=movieInfo["quantity"], title=movieInfo["title"], description=movieInfo["description"], genre=movieInfo["genre"], price=movieInfo["price"], item_type="M", movie_reference=movieInstance.id)
+
+    itemInstance = InventoryItem(inv_quantity=movieInfo["quantity"], title=movieInfo["title"], description=movieInfo["description"], genre=movieInfo["genre"], price=movieInfo["price"], item_type="M", movie_reference=movieInstance.id)
     session.add(itemInstance)
     session.commit()
 
@@ -57,21 +58,22 @@ def getSession():
     Base.metadata.create_all(bind=engine)
     return _SESSION()
 
+def _objectToDict(object):
+    return {col.key: getattr(object, col.key) for col in inspect(object).mapper.column_attrs}
+
+def flattenEntries(entryTouples):
+    if (entryTouples and len(entryTouples)>0):
+        if (len(entryTouples[0]) == 3):
+            return [{**_objectToDict(a), **_objectToDict(b), **_objectToDict(c)} for a, b, c in entryTouples]
+        elif (len(entryTouples[0]) == 2):
+            return [{**_objectToDict(a), **_objectToDict(b)} for a, b in entryTouples]
+
 def dropTables():
     Base.metadata.drop_all(bind=engine)
 
-def printTables():
-    books = pd.read_sql_table(table_name="Book", con=engine)
-    movies = pd.read_sql_table(table_name="Movie", con=engine)
-    items = pd.read_sql_table(table_name="InventoryItem", con=engine)
-    carts = pd.read_sql_table(table_name="ShoppingCart", con=engine)
-    customers = pd.read_sql_table(table_name="Customer", con=engine)
+def printTables(tables = ["Book", "Movie", "InventoryItem", "ShoppingCart", "CartItem", "Order", "OrderItem", "Customer", "PaymentInfo", "Address"]):
+    [print (f"{table} \n{pd.read_sql_table(table_name=table, con=engine)}") for table in tables]
 
-    print(books)
-    print(movies)
-    print(items)
-    print(carts)
-    print(customers)
 
 if __name__ == "__main__":
     createDatabase()

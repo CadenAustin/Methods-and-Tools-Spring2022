@@ -5,7 +5,7 @@ from .Base import Base
 class InventoryItem(Base):
     __tablename__ = "InventoryItem"
     item_id = Column(Integer, primary_key=True)
-    quantity = Column(Integer)
+    inv_quantity = Column(Integer)
     title = Column(String)
     description = Column(String)
     genre = Column(String)
@@ -14,4 +14,5 @@ class InventoryItem(Base):
 
     book_reference = Column(Integer, ForeignKey("Book.id"))
     movie_reference = Column(Integer, ForeignKey("Movie.id"))
+    
     
