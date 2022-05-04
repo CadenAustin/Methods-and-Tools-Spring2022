@@ -3,7 +3,7 @@ from Helpers import getSession, flattenEntries
 
 def getAllOrders(user: Customer):
     session = getSession()
-    return session.query(Order, Address).join(Address, Order.address_id == Address.address_id).filter(Order.user_id==user.id).all()
+    return session.query(Order, Address).filter_by(user_id=user.id).outerjoin(Address, Order.address_id == Address.address_id).all()
 
 def getAllItemsOnOrder(order: Order):
     session = getSession()

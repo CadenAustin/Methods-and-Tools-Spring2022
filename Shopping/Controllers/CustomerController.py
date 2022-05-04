@@ -1,6 +1,6 @@
 from .CartController import deleteUserCart
 
-from Models import Address, Customer, PaymentInfo, ShoppingCart
+from Models import Address, Customer, PaymentInfo, ShoppingCart, Order
 from Helpers import getSession, hashPassword
 
 def checkPassword(customer: Customer, password: str) -> bool:
@@ -64,7 +64,7 @@ def getShippingAddress(user: Customer) -> Address:
 def updateShippingAddress(user: Customer, newAddress: Address):
     session = getSession()
     oldAddress = session.query(Address).filter_by(address_id=user.shipping_address_id)
-    if (oldAddress.first()):
+    if (oldAddress.first() and not session.query(Order).filter_by(address_id=oldAddress.first().address_id).first()):
         oldAddress.delete()
     session.query(Customer).filter_by(id=user.id).update({"shipping_address_id": newAddress.address_id})
     session.commit()
