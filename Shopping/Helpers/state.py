@@ -1,1 +1,3 @@
-user_state = None
+from Models.Customer import Customer
+
+user_state: Customer = None
