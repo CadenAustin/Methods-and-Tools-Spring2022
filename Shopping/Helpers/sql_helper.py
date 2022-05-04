@@ -1,4 +1,5 @@
 import os, sys
+import hashlib
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
@@ -14,6 +15,9 @@ from Models import *
 engine = create_engine('sqlite://' + DB_FILE_NAME)
 
 _SESSION = sessionmaker(bind=engine)
+
+def hashPassword(password: str) -> str:
+    return hashlib.sha256(password.encode('utf_8')).hexdigest()
 
 def createBook(bookInfo):
     session = getSession()
@@ -38,6 +42,16 @@ def createMovie(movieInfo):
     session.add(itemInstance)
     session.commit()
 
+def createUser(userInfo):
+    session = getSession()
+    customerInstance = Customer(name=userInfo["name"], username=userInfo["username"], password_hash=hashPassword(userInfo["password"]))
+    session.add(customerInstance)
+    session.commit()
+
+    session.refresh(customerInstance)
+    session.add(ShoppingCart(user_id=customerInstance.id, total=0))
+    session.commit()
+
 def createDatabase():
     dropTables()
     session = getSession()
@@ -51,6 +65,10 @@ def createDatabase():
     movies_df = pd.read_csv(CURRENT_DIRECTORY + "/Initial/Movies.csv")
     movies_df_dict = movies_df.to_dict(orient='records')
     [createMovie(movie) for movie in movies_df_dict]
+
+    users_df = pd.read_csv(CURRENT_DIRECTORY + "/Initial/Users.csv")
+    users_df_dict = users_df.to_dict(orient='records')
+    [createUser(user) for user in users_df_dict]
 
     print(session.query(Book).all())
 
@@ -78,3 +96,4 @@ def printTables(tables = ["Book", "Movie", "InventoryItem", "ShoppingCart", "Car
 if __name__ == "__main__":
     createDatabase()
     printTables()
+    print("\n\n\nDATABASE INITIALIZED WITH DATA.")

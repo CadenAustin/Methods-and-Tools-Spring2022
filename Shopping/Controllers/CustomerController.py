@@ -1,14 +1,11 @@
-import hashlib
 from .CartController import deleteUserCart
 
 from Models import Address, Customer, PaymentInfo, ShoppingCart
-from Helpers import getSession
+from Helpers import getSession, hashPassword
 
 def checkPassword(customer: Customer, password: str) -> bool:
     return customer and customer.password_hash == hashPassword(password)
 
-def hashPassword(password: str) -> str:
-    return hashlib.sha256(password.encode('utf_8')).hexdigest()
 
 def updatePassword(user: Customer, oldPassword: str, newPassword: str) -> bool:
     session = getSession()

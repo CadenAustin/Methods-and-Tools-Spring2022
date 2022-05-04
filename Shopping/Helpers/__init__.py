@@ -1,1 +1,1 @@
-from .sql_helper import getSession, flattenEntries
+from .sql_helper import getSession, flattenEntries, hashPassword
