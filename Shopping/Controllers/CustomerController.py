@@ -75,11 +75,10 @@ def updateShippingAddress(user: Customer, newAddress: Address):
 def deleteUser(user: Customer) -> bool:
     session = getSession()
     if (deleteUserCart(user)):
-        print("Cart")
         userFromQuery = session.query(Customer).filter_by(id=user.id).first()
         session.delete(userFromQuery)
         session.commit()
 
         return True
-    print("Not")
     return False
+
