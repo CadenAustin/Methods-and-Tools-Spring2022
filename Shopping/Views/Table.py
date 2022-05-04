@@ -9,7 +9,7 @@ def tableView(headers, data, index = False) -> None:
     :param data: List of dictionary objects containing row data
     :param spaces: Optional argument for defining the ammount of space each column is given
     """
-    table = [[row.get(dictKey) for dictKey, printableNames in headers] for row in data]
+    table = [[row.get(key) for key, _ in headers] for row in data]
     print(tabulate(table, headers=[header for _, header in headers], showindex=index, tablefmt="pretty", stralign="center"))
 
 
